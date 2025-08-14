@@ -1,0 +1,39 @@
+---
+config:
+  theme: neutral
+---
+graph TD
+    subgraph UI Layer
+        View(Jetpack Compose UI - Composables)
+        Events(User Actions/Events)
+        SideEffects(LaunchedEffect, rememberCoroutineScope)
+    end
+
+    subgraph ViewModel Layer
+        ViewModel(AndroidX ViewModel)
+        ViewState(UI State - Sealed Class / Data Class)
+        StateFlow(MutableStateFlow<ViewState>)
+        SingleEvents(Channel<SingleEvent>)
+        Coroutines(viewModelScope - CoroutineScope)
+    end
+
+    subgraph Data Layer
+        Repository(Data Repository)
+        DataSources(Local/Remote - e.g., Room, Retrofit, Preferences)
+    end
+
+    View -- Triggers --> Events
+    Events -- Handled by --> ViewModel
+    ViewModel -- Transforms Data --> ViewState
+    ViewState -- Exposes State via --> StateFlow
+    StateFlow -- Observes changes --> View
+    ViewModel -- Triggers/Sends --> SingleEvents
+    SingleEvents -- Handled by --> SideEffects
+    SideEffects -- Observes & Reacts --> View
+
+    ViewModel -- Requests Data via Coroutines --> Repository
+    Repository -- Fetches/Persists Data --> DataSources
+    DataSources -- Provides Data --> Repository
+    Repository -- Returns Data (Flow<Data>) --> ViewModel
+    ViewModel -- Transforms Data (Flow<Data> to ViewState) --> StateFlow
+    
