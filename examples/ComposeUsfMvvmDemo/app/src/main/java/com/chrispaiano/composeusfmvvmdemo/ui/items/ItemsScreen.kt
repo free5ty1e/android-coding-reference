@@ -10,16 +10,20 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,11 +32,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chrispaiano.composeusfmvvmdemo.data.model.Item
 import kotlinx.coroutines.flow.collectLatest // Used for single events
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
     val viewState by viewModel.viewState.collectAsState() // Observe ViewState
-    val scaffoldState = rememberScaffoldState() // For Snackbar
+    val snackbarHostState = remember { SnackbarHostState() } // For Snackbar M3
     val coroutineScope = rememberCoroutineScope()
 
     // Handle One-Time Events (Side Effects)
@@ -40,7 +44,7 @@ fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
         viewModel.singleEvents.collectLatest { effect -> // Collect latest event
             when (effect) {
                 is ItemsViewEffect.ShowSnackbar -> {
-                    scaffoldState.snackbarHostState.showSnackbar(effect.message)
+                    snackbarHostState.showSnackbar(effect.message)
                 }
                 ItemsViewEffect.NavigateToDetailScreen -> {
                     // Perform navigation here (e.g., using a navController)
@@ -50,7 +54,7 @@ fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
     }
 
     Scaffold(
-        scaffoldState = scaffoldState,
+        snackbarHost = { SnackbarHost(snackbarHostState) }, // Use SnackbarHost with M3 state
         topBar = {
             TopAppBar(
                 title = { Text("My Awesome App") },
@@ -69,15 +73,16 @@ fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            when (viewState) {
+            when (val currentViewState = viewState) { // Store viewState in a local variable
                 ItemsViewState.Loading -> {
                     CircularProgressIndicator()
                     Text("Loading items...", modifier = Modifier.padding(top = 16.dp))
                 }
                 is ItemsViewState.Success -> {
+                    val successState = currentViewState // Use the local variable for smart casting
                     // Display Random Text
                     Text(
-                        text = viewState.randomText,
+                        text = successState.randomText,
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.headlineMedium
                     )
@@ -89,11 +94,11 @@ fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
                     }
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    if (viewState.items.isEmpty()) {
+                    if (successState.items.isEmpty()) {
                         Text("No items found. Tap refresh to fetch some.")
                     } else {
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            items((viewState as ItemsViewState.Success).items) { item ->
+                            items(successState.items) { item -> // Use smart-casted successState
                                 ItemCard(item = item) {
                                     viewModel.onEvent(ItemsViewEvent.ItemClicked(it))
                                 }
@@ -102,15 +107,16 @@ fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
                     }
                 }
                 is ItemsViewState.Error -> {
+                    val errorState = currentViewState // Use the local variable for smart casting
                     Text(
-                        text = "Error: ${(viewState as ItemsViewState.Error).message}",
+                        text = "Error: ${errorState.message}", // Use smart-casted errorState
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(16.dp)
                     )
 
                     // Display Random Text even in error state
                     Text(
-                        text = (viewState as ItemsViewState.Error).randomText,
+                        text = errorState.randomText, // Use smart-casted errorState
                         modifier = Modifier.padding(vertical = 8.dp),
                         style = MaterialTheme.typography.headlineMedium
                     )
