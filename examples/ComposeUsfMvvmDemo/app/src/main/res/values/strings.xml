@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ComposeUsfMvvmDemo</string>
+    <string name="app_title">Compose Usf Mvvm Demo</string>
 </resources>

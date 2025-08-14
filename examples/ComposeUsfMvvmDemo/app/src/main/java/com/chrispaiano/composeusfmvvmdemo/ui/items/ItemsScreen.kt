@@ -27,8 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.chrispaiano.composeusfmvvmdemo.R
 import com.chrispaiano.composeusfmvvmdemo.data.model.Item
 import kotlinx.coroutines.flow.collectLatest // Used for single events
 
@@ -56,7 +58,7 @@ fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
         snackbarHost = { SnackbarHost(snackbarHostState) }, // Use SnackbarHost with M3 state
         topBar = {
             TopAppBar(
-                title = { Text("My Awesome App") },
+                title = { Text(stringResource(R.string.app_title)) },
                 actions = {
                     IconButton(onClick = { viewModel.onEvent(ItemsViewEvent.RefreshItems) }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Refresh Items")
