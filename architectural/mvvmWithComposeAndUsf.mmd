@@ -4,36 +4,35 @@ config:
 ---
 graph TD
     subgraph UI Layer
-        View(Jetpack Compose UI - Composables)
-        Events(User Actions/Events)
-        SideEffects(LaunchedEffect, rememberCoroutineScope)
+        View(View<br>Jetpack Compose UI)
+        Events(Events<br>User Actions / Events from UI)
+        SideEffects(SideEffects<br>Composable Side Effects like LaunchedEffect)
     end
 
     subgraph ViewModel Layer
-        ViewModel(AndroidX ViewModel)
-        ViewState(UI State - Sealed Class / Data Class)
-        StateFlow(MutableStateFlow<ViewState>)
-        SingleEvents(Channel<SingleEvent>)
-        Coroutines(viewModelScope - CoroutineScope)
+        ViewModel(ViewModel<br>AndroidX ViewModel)
+        ViewState(ViewState<br>UI State - Sealed Class / Data Class)
+        StateFlow(StateFlow<br>MutableStateFlow of ViewState)
+        SingleEvents(SingleEvents<br>Channel for One-Time Events)
+        Coroutines(Coroutines<br>viewModelScope for Coroutines)
     end
 
     subgraph Data Layer
-        Repository(Data Repository)
-        DataSources(Local/Remote - e.g., Room, Retrofit, Preferences)
+        Repository(Repository<br>Data Repository)
+        DataSources(DataSources<br>Local / Remote Data Sources)
     end
 
     View -- Triggers --> Events
     Events -- Handled by --> ViewModel
-    ViewModel -- Transforms Data --> ViewState
-    ViewState -- Exposes State via --> StateFlow
-    StateFlow -- Observes changes --> View
-    ViewModel -- Triggers/Sends --> SingleEvents
+    ViewModel -- Updates --> ViewState
+    ViewState -- Provides UI State via --> StateFlow
+    StateFlow -- Observes Changes --> View
+    ViewModel -- Sends One-Time Events --> SingleEvents
     SingleEvents -- Handled by --> SideEffects
-    SideEffects -- Observes & Reacts --> View
+    SideEffects -- Triggers UI Recomposition --> View
 
     ViewModel -- Requests Data via Coroutines --> Repository
-    Repository -- Fetches/Persists Data --> DataSources
-    DataSources -- Provides Data --> Repository
+    Repository -- Fetches / Persists Data --> DataSources
+    DataSources -- Provides Raw Data --> Repository
     Repository -- Returns Data (Flow<Data>) --> ViewModel
-    ViewModel -- Transforms Data (Flow<Data> to ViewState) --> StateFlow
-    
+    ViewModel -- Transforms Data to ViewState --> StateFlow
