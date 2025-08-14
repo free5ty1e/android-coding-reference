@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.collectLatest // Used for single events
 fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
     val viewState by viewModel.viewState.collectAsState() // Observe ViewState
     val snackbarHostState = remember { SnackbarHostState() } // For Snackbar M3
-    val coroutineScope = rememberCoroutineScope()
 
     // Handle One-Time Events (Side Effects)
     LaunchedEffect(Unit) { // Key 'Unit' ensures this runs once
