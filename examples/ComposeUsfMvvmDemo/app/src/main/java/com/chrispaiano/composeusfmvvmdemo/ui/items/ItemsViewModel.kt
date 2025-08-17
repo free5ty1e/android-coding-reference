@@ -77,21 +77,15 @@ class ItemsViewModel(private val repository: ItemRepository) : ViewModel() {
             repository.getItems()
                 .onEach { items ->
                     _viewState.update { currentState ->
-                        when (currentState) {
-                            is ItemsViewState.Success -> currentState.copy(items = items)
-                            is ItemsViewState.Error -> ItemsViewState.Success(items = items, randomText = currentState.randomText)
-                            ItemsViewState.Loading -> ItemsViewState.Success(items = items)
-                        }
+                        // When successful, randomText should always reset to its default
+                        ItemsViewState.Success(items = items)
                     }
                     _singleEvents.send(ItemsViewEffect.ShowSnackbar("Items refreshed!"))
                 }
                 .catch { error ->
                     _viewState.update { currentState ->
-                        when (currentState) {
-                            is ItemsViewState.Success -> ItemsViewState.Error(message = error.message ?: "Unknown error", randomText = currentState.randomText)
-                            is ItemsViewState.Error -> currentState.copy(message = error.message ?: "Unknown error")
-                            ItemsViewState.Loading -> ItemsViewState.Error(message = error.message ?: "Unknown error")
-                        }
+                        // When error, randomText should always reset to its default
+                        ItemsViewState.Error(message = error.message ?: "Unknown error")
                     }
                     _singleEvents.send(ItemsViewEffect.ShowSnackbar("Error: ${error.message}"))
                 }
