@@ -1,66 +1,84 @@
-flowchart LR
-    %% TITLE
+flowchart TD
+    %% TITLE AS MINIMAL TEXT - NO CONNECTIONS
     title["Android Compose / MVVM / USF"]
     
-    %% UI LAYER
+    %% MANUALLY POSITIONED LAYERS - FORCE RECTANGULAR SHAPE
+    subgraph MODEL["MODEL LAYER"]
+        direction LR
+        Item["Item (Sealed Class)"]
+        TextItem["TextItem (Data Class)"]
+        ImageItem["ImageItem (Data Class)"]
+    end
+    
+    subgraph USER["USER INPUT LAYER"]
+        direction LR
+        UserClick["User Click / Tap"]
+        UserSwipe["User Swipe / Refresh"]
+        UserButton["User Button Press"]
+    end
+    
     subgraph UI["UI LAYER"]
-        direction TB
+        direction LR
         MainActivity["MainActivity (Entry Point)"]
         ItemsScreen["ItemsScreen (Composable)"]
         ItemCard["TextOnlyItemCard / ImageItemCard (Composable)"]
     end
     
-    %% VIEWMODEL LAYER  
     subgraph VM["VIEWMODEL LAYER"]
-        direction TB
+        direction LR
         ItemsViewModel["ItemsViewModel (ViewModel)"]
         ViewState["ItemsViewState (Sealed: Loading, Success, Error)"]
         ViewEvent["ItemsViewEvent (Sealed: Refresh, Click, GenerateRandomText)"]
         ViewEffect["ItemsViewEffect (Sealed: ShowSnackbar, Navigate)"]
     end
     
-    %% REPOSITORY LAYER
     subgraph REPO["REPOSITORY LAYER"]
-        direction TB
+        direction LR
         ItemRepository["ItemRepository (Repository)"]
     end
     
-    %% DATA SOURCE LAYER
     subgraph DS["DATA SOURCE LAYER"]
-        direction TB
+        direction LR
         RemoteDataSource["RemoteDataSource (Data Source)"]
     end
     
-    %% MODEL LAYER
-    subgraph MODEL["MODEL LAYER"]
-        direction TB
-        Item["Item (Sealed Class)"]
-        TextItem["TextItem (Data Class)"]
-        ImageItem["ImageItem (Data Class)"]
-    end
+    %% FORCE RECTANGULAR LAYOUT - NO TITLE CONNECTIONS
+    MODEL --> UI
+    USER --> UI
     
-    %% CONNECTIONS - USING DIFFERENT ARROW STYLES FOR BETTER VISIBILITY
+    UI --> VM
+    VM --> REPO
+    REPO --> DS
+    
+    %% DETAILED CONNECTIONS - ALL THE USEFUL DATA
+    UserClick -.->|"triggers"| ItemsScreen
+    UserSwipe -.->|"triggers"| ItemsScreen
+    UserButton -.->|"triggers"| ItemsScreen
+    
     MainActivity -.->|"creates & passes VM"| ItemsScreen
     ItemsScreen -.->|"observes"| ItemsViewModel
     ItemsScreen -.->|"renders"| ItemCard
     ItemCard -.->|"displays"| Item
+    
     ItemsViewModel -.->|"exposes StateFlow"| ViewState
     ItemsViewModel -.->|"handles"| ViewEvent  
     ItemsViewModel -.->|"emits"| ViewEffect
     ItemsViewModel -.->|"calls"| ItemRepository
+    
     ItemRepository -.->|"fetches"| RemoteDataSource
     RemoteDataSource -.->|"returns List<Item>"| ItemRepository
     ItemRepository -.->|"returns List<Item>"| ItemsViewModel
+    
     Item -.->|"sealed class of"| TextItem
     Item -.->|"sealed class of"| ImageItem
     
     %% STYLING - LARGER TEXT FOR BETTER UTILIZATION
     classDef nodeStyle fill:#ffffff,stroke:#000000,stroke-width:6px,color:#000000,font-size:24px,font-weight:bold
     classDef groupStyle fill:#ffffff,stroke:#000000,stroke-width:10px,color:#000000,font-size:28px,font-weight:bold
-    classDef titleStyle fill:#ffffff,stroke:#000000,stroke-width:8px,color:#000000,font-size:36px,font-weight:bold
+    classDef titleStyle fill:#ffffff,stroke:none,color:#000000,font-size:28px,font-weight:bold
     
-    class MainActivity,ItemsScreen,ItemCard,ItemsViewModel,ViewState,ViewEvent,ViewEffect,ItemRepository,RemoteDataSource,Item,TextItem,ImageItem nodeStyle
-    class UI,VM,REPO,DS,MODEL groupStyle
+    class MainActivity,ItemsScreen,ItemCard,ItemsViewModel,ViewState,ViewEvent,ViewEffect,ItemRepository,RemoteDataSource,Item,TextItem,ImageItem,UserClick,UserSwipe,UserButton nodeStyle
+    class UI,VM,REPO,DS,MODEL,USER groupStyle
     class title titleStyle
     
     %% THICK ARROW LINES AND LARGE ARROW TEXT
