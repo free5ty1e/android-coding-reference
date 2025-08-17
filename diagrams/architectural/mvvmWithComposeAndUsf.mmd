@@ -1,57 +1,54 @@
----
-config:
-  theme: neutral
----
 flowchart TD
-    %% LAYER GROUPS (with thick borders for each layer)
-    subgraph UI_LAYER["UI LAYER"]
-        direction TB
+    %% UI LAYER
+    subgraph UI["UI LAYER"]
         MainActivity["MainActivity (Entry Point)"]
         ItemsScreen["ItemsScreen (Composable)"]
         ItemCard["TextOnlyItemCard / ImageItemCard (Composable)"]
     end
-    subgraph VIEWMODEL_LAYER["VIEWMODEL LAYER"]
-        direction TB
+    
+    %% VIEWMODEL LAYER  
+    subgraph VM["VIEWMODEL LAYER"]
         ItemsViewModel["ItemsViewModel (ViewModel)"]
-        ItemsViewState["ItemsViewState (Sealed: Loading, Success, Error)"]
-        ItemsViewEvent["ItemsViewEvent (Sealed: Refresh, Click, GenerateRandomText)"]
-        ItemsViewEffect["ItemsViewEffect (Sealed: ShowSnackbar, Navigate)"]
+        ViewState["ItemsViewState (Sealed: Loading, Success, Error)"]
+        ViewEvent["ItemsViewEvent (Sealed: Refresh, Click, GenerateRandomText)"]
+        ViewEffect["ItemsViewEffect (Sealed: ShowSnackbar, Navigate)"]
     end
-    subgraph REPOSITORY_LAYER["REPOSITORY LAYER"]
-        direction TB
+    
+    %% REPOSITORY LAYER
+    subgraph REPO["REPOSITORY LAYER"]
         ItemRepository["ItemRepository (Repository)"]
     end
-    subgraph DATASOURCE_LAYER["DATA SOURCE LAYER"]
-        direction TB
+    
+    %% DATA SOURCE LAYER
+    subgraph DS["DATA SOURCE LAYER"]
         RemoteDataSource["RemoteDataSource (Data Source)"]
     end
-    subgraph MODEL_LAYER["MODEL LAYER"]
-        direction TB
-        ItemSealed["Item (Sealed Class)"]
+    
+    %% MODEL LAYER
+    subgraph MODEL["MODEL LAYER"]
+        Item["Item (Sealed Class)"]
         TextItem["TextItem (Data Class)"]
         ImageItem["ImageItem (Data Class)"]
     end
-
-    %% CONNECTIONS (with large, bold labels)
-    MainActivity -- "<span style="font-size:22px;font-weight:bold">creates & passes VM</span>" --> ItemsScreen
-    ItemsScreen -- "<span style="font-size:22px;font-weight:bold">observes</span>" --> ItemsViewModel
-    ItemsScreen -- "<span style="font-size:22px;font-weight:bold">renders</span>" --> ItemCard
-    ItemCard -- "<span style="font-size:22px;font-weight:bold">displays</span>" --> ItemSealed
-    ItemsViewModel -- "<span style="font-size:22px;font-weight:bold">exposes StateFlow</span>" --> ItemsViewState
-    ItemsViewModel -- "<span style="font-size:22px;font-weight:bold">handles</span>" --> ItemsViewEvent
-    ItemsViewModel -- "<span style="font-size:22px;font-weight:bold">emits</span>" --> ItemsViewEffect
-    ItemsViewModel -- "<span style="font-size:22px;font-weight:bold">calls</span>" --> ItemRepository
-    ItemRepository -- "<span style="font-size:22px;font-weight:bold">fetches</span>" --> RemoteDataSource
-    RemoteDataSource -- "<span style="font-size:22px;font-weight:bold">returns List&lt;Item&gt;</span>" --> ItemRepository
-    ItemRepository -- "<span style="font-size:22px;font-weight:bold">returns List&lt;Item&gt;</span>" --> ItemsViewModel
-    ItemSealed -- "<span style="font-size:22px;font-weight:bold">sealed class of</span>" --> TextItem
-    ItemSealed -- "<span style="font-size:22px;font-weight:bold">sealed class of</span>" --> ImageItem
-
-    %% STYLING for printability and clarity
-    classDef thickNode stroke-width:8px,stroke:#000,color:#000,fill:#fff,font-size:28px,font-weight:bold;
-    classDef thickGroup stroke-width:12px,stroke:#000,fill:#fff;
-    class MainActivity,ItemsScreen,ItemCard,ItemsViewModel,ItemsViewState,ItemsViewEvent,ItemsViewEffect,ItemRepository,RemoteDataSource,ItemSealed,TextItem,ImageItem thickNode;
-    class UI_LAYER,VIEWMODEL_LAYER,REPOSITORY_LAYER,DATASOURCE_LAYER,MODEL_LAYER thickGroup;
-    linkStyle default stroke:#000,stroke-width:6px;
-    %% Use TD for portrait orientation
-    %% flowchart TD
+    
+    %% CONNECTIONS
+    MainActivity -->|"creates & passes VM"| ItemsScreen
+    ItemsScreen -->|"observes"| ItemsViewModel
+    ItemsScreen -->|"renders"| ItemCard
+    ItemCard -->|"displays"| Item
+    ItemsViewModel -->|"exposes StateFlow"| ViewState
+    ItemsViewModel -->|"handles"| ViewEvent  
+    ItemsViewModel -->|"emits"| ViewEffect
+    ItemsViewModel -->|"calls"| ItemRepository
+    ItemRepository -->|"fetches"| RemoteDataSource
+    RemoteDataSource -->|"returns List<Item>"| ItemRepository
+    ItemRepository -->|"returns List<Item>"| ItemsViewModel
+    Item -->|"sealed class of"| TextItem
+    Item -->|"sealed class of"| ImageItem
+    
+    %% STYLING - ALL WHITE BACKGROUND, BLACK TEXT/BORDERS
+    classDef nodeStyle fill:#ffffff,stroke:#000000,stroke-width:3px,color:#000000,font-size:14px,font-weight:bold
+    classDef groupStyle fill:#ffffff,stroke:#000000,stroke-width:4px,color:#000000,font-size:16px,font-weight:bold
+    
+    class MainActivity,ItemsScreen,ItemCard,ItemsViewModel,ViewState,ViewEvent,ViewEffect,ItemRepository,RemoteDataSource,Item,TextItem,ImageItem nodeStyle
+    class UI,VM,REPO,DS,MODEL groupStyle
