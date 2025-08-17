@@ -2,37 +2,56 @@
 config:
   theme: neutral
 ---
-graph TD
-    subgraph UI Layer
-        View(View<br>Jetpack Compose UI)
-        Events(Events<br>User Actions / Events from UI)
-        SideEffects(SideEffects<br>Composable Side Effects like LaunchedEffect)
+flowchart TD
+    %% LAYER GROUPS (with thick borders for each layer)
+    subgraph UI_LAYER["UI LAYER"]
+        direction TB
+        MainActivity["MainActivity (Entry Point)"]
+        ItemsScreen["ItemsScreen (Composable)"]
+        ItemCard["TextOnlyItemCard / ImageItemCard (Composable)"]
+    end
+    subgraph VIEWMODEL_LAYER["VIEWMODEL LAYER"]
+        direction TB
+        ItemsViewModel["ItemsViewModel (ViewModel)"]
+        ItemsViewState["ItemsViewState (Sealed: Loading, Success, Error)"]
+        ItemsViewEvent["ItemsViewEvent (Sealed: Refresh, Click, GenerateRandomText)"]
+        ItemsViewEffect["ItemsViewEffect (Sealed: ShowSnackbar, Navigate)"]
+    end
+    subgraph REPOSITORY_LAYER["REPOSITORY LAYER"]
+        direction TB
+        ItemRepository["ItemRepository (Repository)"]
+    end
+    subgraph DATASOURCE_LAYER["DATA SOURCE LAYER"]
+        direction TB
+        RemoteDataSource["RemoteDataSource (Data Source)"]
+    end
+    subgraph MODEL_LAYER["MODEL LAYER"]
+        direction TB
+        ItemSealed["Item (Sealed Class)"]
+        TextItem["TextItem (Data Class)"]
+        ImageItem["ImageItem (Data Class)"]
     end
 
-    subgraph ViewModel Layer
-        ViewModel(ViewModel<br>AndroidX ViewModel)
-        ViewState(ViewState<br>UI State - Sealed Class / Data Class)
-        StateFlow(StateFlow<br>MutableStateFlow of ViewState)
-        SingleEvents(SingleEvents<br>Channel for One-Time Events)
-        Coroutines(Coroutines<br>viewModelScope for Coroutines)
-    end
+    %% CONNECTIONS (with large, bold labels)
+    MainActivity -- "<span style="font-size:22px;font-weight:bold">creates & passes VM</span>" --> ItemsScreen
+    ItemsScreen -- "<span style="font-size:22px;font-weight:bold">observes</span>" --> ItemsViewModel
+    ItemsScreen -- "<span style="font-size:22px;font-weight:bold">renders</span>" --> ItemCard
+    ItemCard -- "<span style="font-size:22px;font-weight:bold">displays</span>" --> ItemSealed
+    ItemsViewModel -- "<span style="font-size:22px;font-weight:bold">exposes StateFlow</span>" --> ItemsViewState
+    ItemsViewModel -- "<span style="font-size:22px;font-weight:bold">handles</span>" --> ItemsViewEvent
+    ItemsViewModel -- "<span style="font-size:22px;font-weight:bold">emits</span>" --> ItemsViewEffect
+    ItemsViewModel -- "<span style="font-size:22px;font-weight:bold">calls</span>" --> ItemRepository
+    ItemRepository -- "<span style="font-size:22px;font-weight:bold">fetches</span>" --> RemoteDataSource
+    RemoteDataSource -- "<span style="font-size:22px;font-weight:bold">returns List&lt;Item&gt;</span>" --> ItemRepository
+    ItemRepository -- "<span style="font-size:22px;font-weight:bold">returns List&lt;Item&gt;</span>" --> ItemsViewModel
+    ItemSealed -- "<span style="font-size:22px;font-weight:bold">sealed class of</span>" --> TextItem
+    ItemSealed -- "<span style="font-size:22px;font-weight:bold">sealed class of</span>" --> ImageItem
 
-    subgraph Data Layer
-        Repository(Repository<br>Data Repository)
-        DataSources(DataSources<br>Local / Remote Data Sources)
-    end
-
-    View -- Triggers --> Events
-    Events -- Handled by --> ViewModel
-    ViewModel -- Updates --> ViewState
-    ViewState -- Provides UI State via --> StateFlow
-    StateFlow -- Observes Changes --> View
-    ViewModel -- Sends One-Time Events --> SingleEvents
-    SingleEvents -- Handled by --> SideEffects
-    SideEffects -- Triggers UI Recomposition --> View
-
-    ViewModel -- Requests Data via Coroutines --> Repository
-    Repository -- Fetches / Persists Data --> DataSources
-    DataSources -- Provides Raw Data --> Repository
-    Repository -- Returns Data (Flow<Data>) --> ViewModel
-    ViewModel -- Transforms Data to ViewState --> StateFlow
+    %% STYLING for printability and clarity
+    classDef thickNode stroke-width:8px,stroke:#000,color:#000,fill:#fff,font-size:28px,font-weight:bold;
+    classDef thickGroup stroke-width:12px,stroke:#000,fill:#fff;
+    class MainActivity,ItemsScreen,ItemCard,ItemsViewModel,ItemsViewState,ItemsViewEvent,ItemsViewEffect,ItemRepository,RemoteDataSource,ItemSealed,TextItem,ImageItem thickNode;
+    class UI_LAYER,VIEWMODEL_LAYER,REPOSITORY_LAYER,DATASOURCE_LAYER,MODEL_LAYER thickGroup;
+    linkStyle default stroke:#000,stroke-width:6px;
+    %% Use TD for portrait orientation
+    %% flowchart TD
