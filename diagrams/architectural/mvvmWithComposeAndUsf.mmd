@@ -2,7 +2,7 @@ flowchart TD
     %% TITLE AS MINIMAL TEXT - NO CONNECTIONS
     title["Android Compose / MVVM / USF"]
     
-    %% MANUALLY POSITIONED LAYERS - FORCE RECTANGULAR SHAPE
+    %% TOP ROW - SPLIT INTO TWO COLUMNS
     subgraph MODEL["MODEL LAYER"]
         direction LR
         Item["Item (Sealed Class)"]
@@ -17,21 +17,7 @@ flowchart TD
         UserButton["User Button Press"]
     end
     
-    subgraph UI["UI LAYER"]
-        direction LR
-        MainActivity["MainActivity (Entry Point)"]
-        ItemsScreen["ItemsScreen (Composable)"]
-        ItemCard["TextOnlyItemCard / ImageItemCard (Composable)"]
-    end
-    
-    subgraph VM["VIEWMODEL LAYER"]
-        direction LR
-        ItemsViewModel["ItemsViewModel (ViewModel)"]
-        ViewState["ItemsViewState (Sealed: Loading, Success, Error)"]
-        ViewEvent["ItemsViewEvent (Sealed: Refresh, Click, GenerateRandomText)"]
-        ViewEffect["ItemsViewEffect (Sealed: ShowSnackbar, Navigate)"]
-    end
-    
+    %% MIDDLE ROWS - REPOSITORY AND DATA SOURCE ABOVE VIEWMODEL
     subgraph REPO["REPOSITORY LAYER"]
         direction LR
         ItemRepository["ItemRepository (Repository)"]
@@ -42,13 +28,30 @@ flowchart TD
         RemoteDataSource["RemoteDataSource (Data Source)"]
     end
     
+    %% UI LAYER
+    subgraph UI["UI LAYER"]
+        direction LR
+        MainActivity["MainActivity (Entry Point)"]
+        ItemsScreen["ItemsScreen (Composable)"]
+        ItemCard["TextOnlyItemCard / ImageItemCard (Composable)"]
+    end
+    
+    %% BOTTOM ROW - VIEWMODEL LAYER
+    subgraph VM["VIEWMODEL LAYER"]
+        direction LR
+        ItemsViewModel["ItemsViewModel (ViewModel)"]
+        ViewState["ItemsViewState (Sealed: Loading, Success, Error)"]
+        ViewEvent["ItemsViewEvent (Sealed: Refresh, Click, GenerateRandomText)"]
+        ViewEffect["ItemsViewEffect (Sealed: ShowSnackbar, Navigate)"]
+    end
+    
     %% FORCE RECTANGULAR LAYOUT - NO TITLE CONNECTIONS
     MODEL --> UI
     USER --> UI
     
-    UI --> VM
-    VM --> REPO
+    UI --> REPO
     REPO --> DS
+    DS --> VM
     
     %% DETAILED CONNECTIONS - ALL THE USEFUL DATA
     UserClick -.->|"triggers"| ItemsScreen
@@ -71,6 +74,9 @@ flowchart TD
     
     Item -.->|"sealed class of"| TextItem
     Item -.->|"sealed class of"| ImageItem
+    
+    %% MODEL TO DATA SOURCE CONNECTION
+    MODEL -.->|"defines data structure"| DS
     
     %% STYLING - LARGER TEXT FOR BETTER UTILIZATION
     classDef nodeStyle fill:#ffffff,stroke:#000000,stroke-width:6px,color:#000000,font-size:24px,font-weight:bold
