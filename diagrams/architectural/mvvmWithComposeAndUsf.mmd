@@ -36,20 +36,20 @@ flowchart LR
         ImageItem["ImageItem (Data Class)"]
     end
     
-    %% CONNECTIONS
-    MainActivity -->|"creates & passes VM"| ItemsScreen
-    ItemsScreen -->|"observes"| ItemsViewModel
-    ItemsScreen -->|"renders"| ItemCard
-    ItemCard -->|"displays"| Item
-    ItemsViewModel -->|"exposes StateFlow"| ViewState
-    ItemsViewModel -->|"handles"| ViewEvent  
-    ItemsViewModel -->|"emits"| ViewEffect
-    ItemsViewModel -->|"calls"| ItemRepository
-    ItemRepository -->|"fetches"| RemoteDataSource
-    RemoteDataSource -->|"returns List<Item>"| ItemRepository
-    ItemRepository -->|"returns List<Item>"| ItemsViewModel
-    Item -->|"sealed class of"| TextItem
-    Item -->|"sealed class of"| ImageItem
+    %% CONNECTIONS - USING DIFFERENT ARROW STYLES FOR BETTER VISIBILITY
+    MainActivity -.->|"creates & passes VM"| ItemsScreen
+    ItemsScreen -.->|"observes"| ItemsViewModel
+    ItemsScreen -.->|"renders"| ItemCard
+    ItemCard -.->|"displays"| Item
+    ItemsViewModel -.->|"exposes StateFlow"| ViewState
+    ItemsViewModel -.->|"handles"| ViewEvent  
+    ItemsViewModel -.->|"emits"| ViewEffect
+    ItemsViewModel -.->|"calls"| ItemRepository
+    ItemRepository -.->|"fetches"| RemoteDataSource
+    RemoteDataSource -.->|"returns List<Item>"| ItemRepository
+    ItemRepository -.->|"returns List<Item>"| ItemsViewModel
+    Item -.->|"sealed class of"| TextItem
+    Item -.->|"sealed class of"| ImageItem
     
     %% STYLING - LARGER TEXT FOR BETTER UTILIZATION
     classDef nodeStyle fill:#ffffff,stroke:#000000,stroke-width:6px,color:#000000,font-size:24px,font-weight:bold
