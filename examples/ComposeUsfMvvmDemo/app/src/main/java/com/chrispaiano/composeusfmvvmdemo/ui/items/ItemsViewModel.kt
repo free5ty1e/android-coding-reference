@@ -3,6 +3,8 @@ package com.chrispaiano.composeusfmvvmdemo.ui.items
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.chrispaiano.composeusfmvvmdemo.data.model.Item
+import com.chrispaiano.composeusfmvvmdemo.data.model.ImageItem
+import com.chrispaiano.composeusfmvvmdemo.data.model.TextItem
 import com.chrispaiano.composeusfmvvmdemo.data.repository.ItemRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,7 +57,11 @@ class ItemsViewModel(private val repository: ItemRepository) : ViewModel() {
             ItemsViewEvent.RefreshItems -> fetchItems()
             is ItemsViewEvent.ItemClicked -> {
                 viewModelScope.launch {
-                    _singleEvents.send(ItemsViewEffect.ShowSnackbar("Item clicked: ${event.item.name}"))
+                    val itemName = when (event.item) {
+                        is TextItem -> event.item.name
+                        is ImageItem -> event.item.name
+                    }
+                    _singleEvents.send(ItemsViewEffect.ShowSnackbar("Item clicked: $itemName"))
                     // In a real app, this would trigger navigation:
                     // _singleEvents.send(ItemsViewEffect.NavigateToDetailScreen(event.item.id))
                 }

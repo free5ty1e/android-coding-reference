@@ -27,16 +27,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.chrispaiano.composeusfmvvmdemo.R
+import com.chrispaiano.composeusfmvvmdemo.data.model.ImageItem
 import com.chrispaiano.composeusfmvvmdemo.data.model.Item
+import com.chrispaiano.composeusfmvvmdemo.data.model.TextItem
 import kotlinx.coroutines.flow.collectLatest // Used for single events
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
+fun ItemsScreen(
+    viewModel: ItemsViewModel = viewModel(),
+    modifier: Modifier = Modifier
+) {
     val viewState by viewModel.viewState.collectAsState() // Observe ViewState
     val snackbarHostState = remember { SnackbarHostState() } // For Snackbar M3
 
@@ -68,7 +75,7 @@ fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -100,8 +107,14 @@ fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
                     } else {
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
                             items(successState.items) { item -> // Use smart-casted successState
-                                ItemCard(item = item) {
-                                    viewModel.onEvent(ItemsViewEvent.ItemClicked(it))
+                                // Handle different item types
+                                when (item) {
+                                    is TextItem -> TextOnlyItemCard(item = item) {
+                                        viewModel.onEvent(ItemsViewEvent.ItemClicked(it))
+                                    }
+                                    is ImageItem -> ImageItemCard(item = item) {
+                                        viewModel.onEvent(ItemsViewEvent.ItemClicked(it))
+                                    }
                                 }
                             }
                         }
@@ -132,7 +145,7 @@ fun ItemsScreen(viewModel: ItemsViewModel = viewModel()) {
 }
 
 @Composable
-fun ItemCard(item: Item, onItemClick: (Item) -> Unit) {
+fun TextOnlyItemCard(item: TextItem, onItemClick: (Item) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -144,6 +157,36 @@ fun ItemCard(item: Item, onItemClick: (Item) -> Unit) {
             Text(text = item.name, style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = item.description, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+fun ImageItemCard(item: ImageItem, onItemClick: (Item) -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable { onItemClick(item) },
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column {
+            // Image section
+            AsyncImage(
+                model = item.imageUrl,
+                contentDescription = "Image for ${item.name}",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentScale = ContentScale.Crop
+            )
+            
+            // Text content section
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = item.name, style = MaterialTheme.typography.headlineMedium)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = item.description, style = MaterialTheme.typography.bodySmall)
+            }
         }
     }
 }
